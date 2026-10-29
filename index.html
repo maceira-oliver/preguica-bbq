@@ -71,6 +71,10 @@ nav .link{color:var(--muted2);text-decoration:none;font-weight:500}
 .card h3{font-weight:800;font-size:32px}
 .card p{margin:0;color:var(--muted);font-size:16px;flex-grow:1}
 .card button{margin-top:6px;min-height:48px;border-radius:12px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;background:transparent;color:var(--text);border:2px solid var(--line2)}
+.card.special{grid-column:1/-1;background:transparent;border-style:dashed;border-color:var(--line2)}
+.card.special .body{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px;padding:28px 32px}
+.card.special .sp-copy{flex:1 1 420px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.card.special .btn{flex:0 0 auto;padding:12px 28px}
 .card.sel button{background:var(--accent);color:var(--ink);border-color:var(--accent)}
 
 .order-sec{padding-top:48px;padding-bottom:96px}
@@ -160,7 +164,18 @@ footer .links{display:flex;gap:18px;flex-wrap:wrap}
     </div>
     <p>Toque em “Adicionar” nas carnes que quer. O pedido junta tudo lá embaixo.</p>
   </div>
-  <div class="grid" id="grid"></div>
+  <div class="grid" id="grid">
+    <article class="card special" id="special">
+      <div class="body">
+        <div class="sp-copy">
+          <span class="tag">Fora do cardápio</span>
+          <h3 class="display">Quer outra coisa?</h3>
+          <p>Frango, linguiça, lombo, um corte específico… Diga o que tem em mente e eu vejo se dá para fazer.</p>
+        </div>
+        <a class="btn btn-ghost" href="#pedido" id="go-other" style="justify-content:center;border-radius:12px;min-height:48px">Pedir algo especial</a>
+      </div>
+    </article>
+  </div>
 </section>
 
 <section id="pedido" class="wrap order-sec">
@@ -179,6 +194,7 @@ footer .links{display:flex;gap:18px;flex-wrap:wrap}
       <label class="full">Seu nome<input type="text" id="f-name" placeholder="Como posso te chamar?" autocomplete="given-name"></label>
       <label>Quantas pessoas<input type="number" id="f-people" min="1" inputmode="numeric" placeholder="Ex.: 10"></label>
       <label>Para quando<input type="date" id="f-date"></label>
+      <label class="full">Outra carne ou pedido especial (opcional)<input type="text" id="f-other" placeholder="Ex.: frango defumado, linguiça, lombo…"></label>
       <label class="full">Observações (opcional)<textarea id="f-notes" rows="3" placeholder="Evento, entrega, preferências…"></textarea></label>
       <a class="btn btn-primary send full" id="send" href="#" target="_blank" rel="noopener">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 9.5c.3 2 2 4 4.5 4.8l1.2-1.2 2 1-.4 1.6c-3.6.4-7.6-3.3-7.4-7l1.6-.4 1 2z"/></svg>
@@ -238,7 +254,7 @@ footer .links{display:flex;gap:18px;flex-wrap:wrap}
     card.querySelector('p').textContent = m.desc;
     card.querySelector('button').addEventListener('click', function () { toggle(m.id); });
     m.el = card;
-    grid.appendChild(card);
+    grid.insertBefore(card, $('special'));
   });
 
   function toggle(id) {
@@ -252,11 +268,13 @@ footer .links{display:flex;gap:18px;flex-wrap:wrap}
     var people = $('f-people').value.trim();
     var date = $('f-date').value;
     var notes = $('f-notes').value.trim();
+    var other = $('f-other').value.trim();
     var lines = ['Olá! Vi a página da Preguiça BBQ e quero um orçamento.'];
     if (chosen.length) {
       lines.push('', 'Carnes:');
       chosen.forEach(function (m) { lines.push('• ' + m.name); });
     }
+    if (other) lines.push('', 'Pedido especial: ' + other);
     var extra = [];
     if (people) extra.push('Pessoas: ' + people);
     if (date) { var p = date.split('-'); extra.push('Data: ' + p[2] + '/' + p[1] + '/' + p[0]); }
@@ -288,12 +306,17 @@ footer .links{display:flex;gap:18px;flex-wrap:wrap}
         chips.appendChild(c);
       }
     });
-    $('none').style.display = count ? 'none' : '';
+    $('none').style.display = (count || $('f-other').value.trim()) ? 'none' : '';
     $('send').href = waLink(message());
   }
 
-  ['f-name', 'f-people', 'f-date', 'f-notes'].forEach(function (id) {
+  ['f-name', 'f-people', 'f-date', 'f-other', 'f-notes'].forEach(function (id) {
     $(id).addEventListener('input', render);
+  });
+  $('go-other').addEventListener('click', function (e) {
+    e.preventDefault();
+    $('f-other').focus();
+    $('f-other').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
   $('form').addEventListener('submit', function (e) { e.preventDefault(); });
   render();
